@@ -28,6 +28,7 @@ private:
 
 private:
 	tagConnInfo mstConnInfo;
+	MYSQL mstMysql;
 	MYSQL *mpMysql;
 	time_t miLastPing;
 	bool mbInit;
