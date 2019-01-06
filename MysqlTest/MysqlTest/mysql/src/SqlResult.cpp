@@ -7,10 +7,6 @@ CSqlResult::CSqlResult(){
 }
 
 CSqlResult::~CSqlResult(){
-	if (mpResult) {
-		mysql_free_result(mpResult);
-		mpResult = nullptr;
-	}
 }
 
 int CSqlResult::HandleQueryReult(MYSQL_RES *pResult) {
