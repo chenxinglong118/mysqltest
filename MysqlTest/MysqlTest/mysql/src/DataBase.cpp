@@ -1,16 +1,13 @@
 #include "DataBase.h"
 
 CDataBase::CDataBase(){
-	mpMysql = (MYSQL*)do_malloc(sizeof(MYSQL));
+	mpMysql = NULL;
 	miLastPing = 0;
 	mbInit = false;
 	mbQuit = false;
 }
 
 CDataBase::~CDataBase(){
-	if (mpMysql) {
-		DOFREE(mpMysql);
-	}
 }
 
 void CDataBase::Quit() {
@@ -27,35 +24,36 @@ int CDataBase::TaskInit() {
 	mysql_thread_init();
 	if (!mbInit) {
 		do {
-			mysql_init(mpMysql);
-			//设置长连接然后使用mysql_ping保活
-			if (mstConnInfo.bReconnect) {
-				if (mysql_options(mpMysql, MYSQL_OPT_RECONNECT, &mstConnInfo.bReconnect)) {
-					LOG_ERR("MYSQL_OPT_RECONNECT error %s", mysql_error(mpMysql));
+			mpMysql = mysql_init(&mstMysql);
+			if (mpMysql) {
+				//设置长连接然后使用mysql_ping保活
+				if (mstConnInfo.bReconnect) {
+					if (mysql_options(mpMysql, MYSQL_OPT_RECONNECT, &mstConnInfo.bReconnect)) {
+						LOG_ERR("MYSQL_OPT_RECONNECT error %d %s", mysql_errno(mpMysql), mysql_error(mpMysql));
+						break;
+					}
+				}
+
+				if (!mstConnInfo.strCharSetName.empty()) {
+					//设置utf8编码
+					if (mysql_options(mpMysql, MYSQL_SET_CHARSET_NAME, mstConnInfo.strCharSetName.c_str())) {
+						LOG_ERR("MYSQL_SET_CHARSET_NAME error %s", mysql_error(mpMysql));
+						break;
+					}
+				}
+
+				if (mstConnInfo.iTimeOut > 0) {
+					mysql_options(mpMysql, MYSQL_OPT_CONNECT_TIMEOUT, &mstConnInfo.iTimeOut);
+				}
+
+				if (!mysql_real_connect(mpMysql, mstConnInfo.strHost.c_str(), mstConnInfo.strUsr.c_str(), mstConnInfo.strPasswd.c_str(), mstConnInfo.strDbName.c_str(), mstConnInfo.usPort, nullptr, CLIENT_MULTI_STATEMENTS)) {
+					LOG_ERR("mysql_real_connect error %d %s", mysql_errno(mpMysql), mysql_error(mpMysql));
 					break;
 				}
-			}
 
-			if (!mstConnInfo.strCharSetName.empty()) {
-				//设置utf8编码
-				if (mysql_options(mpMysql, MYSQL_SET_CHARSET_NAME, mstConnInfo.strCharSetName.c_str())) {
-					LOG_ERR("MYSQL_SET_CHARSET_NAME error %s", mysql_error(mpMysql));
-					break;
-				}
-			}
-
-			mysql_options(mpMysql, MYSQL_OPT_CONNECT_TIMEOUT, &mstConnInfo.iTimeOut);
-			if (!mysql_real_connect(mpMysql, mstConnInfo.strHost.c_str(), mstConnInfo.strUsr.c_str(), mstConnInfo.strPasswd.c_str(), mstConnInfo.strDbName.c_str(), mstConnInfo.usPort, nullptr, CLIENT_MULTI_STATEMENTS)) {
-				LOG_ERR("mysql_real_connect error %s", mysql_error(mpMysql));
-				break;
-			}
-
-			mbInit = true;
+				mbInit = true;
+			} 
 		} while (0);
-	}
-
-	if (!mbInit) {
-		mysql_close(mpMysql);
 	}
 
 	return 0;
@@ -108,18 +106,34 @@ void CDataBase::ExcuteQuery(CSqlQuery* pQuery) {
 		if (iRet) {
 			if (iRet == CR_COMMANDS_OUT_OF_SYNC) {//命令以一个不适当的次序被执行
 				LOG_ERR("Commands is out of sync");
-			} else if (iRet == CR_SERVER_GONE_ERROR) {//MySQL服务器关闭了
+			}
+			else if (iRet == CR_SERVER_GONE_ERROR) {//MySQL服务器关闭了
 				LOG_ERR("mysql server gone");
-			} else if (iRet == CR_SERVER_LOST) {//对服务器的连接在查询期间失去
+			}
+			else if (iRet == CR_SERVER_LOST) {//对服务器的连接在查询期间失去
 				LOG_ERR("mysql server lost");
 				DoPing();
 				continue;
-			} else {//发生一个未知的错误
+			}
+			else {//发生一个未知的错误
 				LOG_ERR("unknow error");
 			}
 		}
 
-		pQuery->HandleQueryReult(mysql_store_result(mpMysql));
+		MYSQL_RES *pResult = mysql_store_result(mpMysql);
+		if (pResult) {
+			pQuery->HandleQueryReult(pResult);
+		} else {// mysql_store_result() returned nothing; should it have?
+			if (mysql_field_count(mpMysql) == 0) // query does not return data   (it was not a SELECT)
+			{
+				my_ulonglong iNumRows = mysql_affected_rows(mpMysql);
+			}
+			else // mysql_store_result() should have returned data
+			{
+				LOG_ERR("Error: %s", mysql_error(mpMysql));
+			}
+		}
+		
 		sqlstr = pQuery->PopQueryStr();
 	}
 
@@ -141,10 +155,11 @@ int CDataBase::TaskExcute() {
 
 int CDataBase::TaskQuit() {
 	LOG_INFO("Enter CDataBase::TaskQuit");
-	if (mbInit) {
+	if (mpMysql) {
 		mysql_close(mpMysql);
 		mbInit = false;
 		CleanQuery();
+		mpMysql = NULL;
 	}
 	mysql_thread_end();
 
