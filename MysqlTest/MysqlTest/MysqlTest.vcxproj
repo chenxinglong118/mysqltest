@@ -102,13 +102,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../third/svrbase/base/include;../third/svrbase/cfg/include;../third/svrbase/libuv/include;../third/libuv/include;../third/mysql/include;../third/rapidjson;mysql/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../third/svrbase/base/include;../third/svrbase/cfg/include;../third/svrbase/libuv/include;../third/libuv/win/include;../third/mysql/include;../third/rapidjson;mysql/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;IPHLPAPI.lib;Psapi.lib;Userenv.lib;../third/svrbase/SvrBase.lib;../third/libuv/lib/libuv.lib;../third/mysql/lib/libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;IPHLPAPI.lib;Psapi.lib;Userenv.lib;../third/svrbase/SvrBase.lib;../third/libuv/win/lib/libuv.lib;../third/mysql/lib/libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,20 +151,22 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mysql\include\DataBase.h" />
+    <ClInclude Include="mysql\include\SqlBase.h" />
     <ClInclude Include="mysql\include\mysqldef.h" />
     <ClInclude Include="mysql\include\SqlFiled.h" />
     <ClInclude Include="mysql\include\SqlQuery.h" />
     <ClInclude Include="mysql\include\SqlResult.h" />
+    <ClInclude Include="mysql\include\SqlRow.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MysqlTest.cpp" />
-    <ClCompile Include="mysql\src\DataBase.cpp" />
+    <ClCompile Include="mysql\src\SqlBase.cpp" />
     <ClCompile Include="mysql\src\SqlFiled.cpp" />
     <ClCompile Include="mysql\src\SqlQuery.cpp" />
     <ClCompile Include="mysql\src\SqlResult.cpp" />
+    <ClCompile Include="mysql\src\SqlRow.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

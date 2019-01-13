@@ -1,26 +1,26 @@
-#include "DataBase.h"
+#include "SqlBase.h"
 
-CDataBase::CDataBase(){
+CSqlBase::CSqlBase(){
 	mpMysql = NULL;
 	miLastPing = 0;
 	mbInit = false;
 	mbQuit = false;
 }
 
-CDataBase::~CDataBase(){
+CSqlBase::~CSqlBase(){
 }
 
-void CDataBase::Quit() {
+void CSqlBase::Quit() {
 	mbQuit = true;
 	mcSem.Post();
 }
 
-void CDataBase::SetSqlParam(const tagConnInfo& stConnInfo) {
+void CSqlBase::SetSqlParam(const tagConnInfo& stConnInfo) {
 	mstConnInfo = stConnInfo;
 }
 
-int CDataBase::TaskInit() {
-	LOG_INFO("Enter CDataBase::TaskInit");
+int CSqlBase::TaskInit() {
+	LOG_INFO("Enter CSqlBase::TaskInit");
 	mysql_thread_init();
 	if (!mbInit) {
 		do {
@@ -59,7 +59,7 @@ int CDataBase::TaskInit() {
 	return 0;
 }
 
-int CDataBase::DoPing() {
+int CSqlBase::DoPing() {
 	if (mbInit) {
 		return mysql_ping(mpMysql);
 	}
@@ -67,7 +67,7 @@ int CDataBase::DoPing() {
 	return 1;
 }
 
-int CDataBase::PushQuery(CSqlQuery* pQuery) {
+int CSqlBase::PushQuery(CSqlQuery* pQuery) {
 	ASSERT_RET_VALUE(mbInit && nullptr != pQuery, 1);
 	mcQueQueryMutex.Lock();
 	mqueQuery.push(pQuery);
@@ -76,7 +76,7 @@ int CDataBase::PushQuery(CSqlQuery* pQuery) {
 	return 0;
 }
 
-CSqlQuery* CDataBase::PopQuery() {
+CSqlQuery* CSqlBase::PopQuery() {
 	CSqlQuery* pQuery = nullptr;
 	mcQueQueryMutex.Lock();
 	if (!mqueQuery.empty()) {
@@ -88,7 +88,7 @@ CSqlQuery* CDataBase::PopQuery() {
 	return pQuery;
 }
 
-void CDataBase::CleanQuery() {
+void CSqlBase::CleanQuery() {
 	mcQueQueryMutex.Lock();
 	if (!mqueQuery.empty()) {
 		CSqlQuery* pQuery = mqueQuery.front();
@@ -98,7 +98,7 @@ void CDataBase::CleanQuery() {
 	mcQueQueryMutex.UnLock();
 }
 
-void CDataBase::ExcuteQuery(CSqlQuery* pQuery) {
+void CSqlBase::ExcuteQuery(CSqlQuery* pQuery) {
 	ASSERT_RET(nullptr != pQuery);
 	len_str sqlstr = pQuery->PopQueryStr();
 	while (sqlstr.iLen > 0 && nullptr != sqlstr.pStr) {
@@ -130,7 +130,7 @@ void CDataBase::ExcuteQuery(CSqlQuery* pQuery) {
 			}
 			else // mysql_store_result() should have returned data
 			{
-				LOG_ERR("Error: %s", mysql_error(mpMysql));
+				LOG_ERR("Error: %s %s", mysql_error(mpMysql), (char*)sqlstr.pStr);
 			}
 		}
 		
@@ -140,12 +140,13 @@ void CDataBase::ExcuteQuery(CSqlQuery* pQuery) {
 	DODELETE(pQuery);
 }
 
-int CDataBase::TaskExcute() {
-	LOG_INFO("Enter CDataBase::TaskExcute");
+int CSqlBase::TaskExcute() {
+	LOG_INFO("Enter CSqlBase::TaskExcute");
 	while(!mbQuit && mbInit) {
 		CSqlQuery* pQuery  = PopQuery();
 		if (nullptr == pQuery) {
 			mcSem.Wait();
+			continue;
 		}
 
 		ExcuteQuery(pQuery);
@@ -153,8 +154,8 @@ int CDataBase::TaskExcute() {
 	return 0;
 }
 
-int CDataBase::TaskQuit() {
-	LOG_INFO("Enter CDataBase::TaskQuit");
+int CSqlBase::TaskQuit() {
+	LOG_INFO("Enter CSqlBase::TaskQuit");
 	if (mpMysql) {
 		mysql_close(mpMysql);
 		mbInit = false;

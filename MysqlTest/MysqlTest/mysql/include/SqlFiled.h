@@ -6,8 +6,17 @@
 class CSqlFiled
 {
 public:
-	CSqlFiled();
+	CSqlFiled(char* pData, enum_field_types iType);
 	~CSqlFiled();
+
+public:
+	short GetShort();
+	float GetFloat();
+	long GetLong();
+
+private:
+	char* mpData;
+	enum_field_types miType;
 };
 
 #endif

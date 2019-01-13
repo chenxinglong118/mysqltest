@@ -39,13 +39,16 @@
     <ClInclude Include="mysql\include\SqlQuery.h">
       <Filter>mysql\include</Filter>
     </ClInclude>
-    <ClInclude Include="mysql\include\DataBase.h">
-      <Filter>mysql\include</Filter>
-    </ClInclude>
     <ClInclude Include="mysql\include\SqlFiled.h">
       <Filter>mysql\include</Filter>
     </ClInclude>
     <ClInclude Include="mysql\include\SqlResult.h">
+      <Filter>mysql\include</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\include\SqlBase.h">
+      <Filter>mysql\include</Filter>
+    </ClInclude>
+    <ClInclude Include="mysql\include\SqlRow.h">
       <Filter>mysql\include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,9 +59,6 @@
     <ClCompile Include="MysqlTest.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mysql\src\DataBase.cpp">
-      <Filter>mysql\src</Filter>
-    </ClCompile>
     <ClCompile Include="mysql\src\SqlQuery.cpp">
       <Filter>mysql\src</Filter>
     </ClCompile>
@@ -66,6 +66,12 @@
       <Filter>mysql\src</Filter>
     </ClCompile>
     <ClCompile Include="mysql\src\SqlResult.cpp">
+      <Filter>mysql\src</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql\src\SqlBase.cpp">
+      <Filter>mysql\src</Filter>
+    </ClCompile>
+    <ClCompile Include="mysql\src\SqlRow.cpp">
       <Filter>mysql\src</Filter>
     </ClCompile>
   </ItemGroup>

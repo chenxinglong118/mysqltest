@@ -1,14 +1,14 @@
-#ifndef __CDATABASE__H_
-#define __CDATABASE__H_
+#ifndef __CSQLBASE__H_
+#define __CSQLBASE__H_
 #include "Task.h"
 #include "UvSem.h"
 #include "UvMutex.h"
 #include "SqlQuery.h"
 
-class CDataBase : public CTask{
+class CSqlBase : public CTask{
 public:
-	CDataBase();
-	~CDataBase();
+	CSqlBase();
+	~CSqlBase();
 
 public:
 	void SetSqlParam(const tagConnInfo& stConnInfo);

@@ -1,6 +1,6 @@
 #ifndef __CSQLRESULT__H_
 #define __CSQLRESULT__H_
-#include "SqlFiled.h"
+#include "SqlRow.h"
 
 class CSqlResult
 {

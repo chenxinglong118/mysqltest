@@ -1,8 +1,9 @@
-
-SvrBase.sdf
+*log
 .vs/SvrBase/v14/.suo
-SvrBase/x64/Debug/SvrBase.log
-SvrBase.sdf
-SvrBase.sdf
-SvrBase.sdf
+x64
+*sdf
 third
+*.log
+MysqlTest/.vs/MysqlTest/v14/.suo
+MysqlTest/MysqlTest/x64/Debug/MysqlTest.Build.CppClean.log
+MysqlTest/MysqlTest/x64/Debug/MysqlTest.log

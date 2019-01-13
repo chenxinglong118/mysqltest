@@ -3,15 +3,15 @@
 
 #include "stdafx.h"
 #include "CLogmanager.h"
-#include "DataBase.h"
+#include "SqlBase.h"
 #include "UvTaskPool.h"
 //http://blog.chinaunix.net/uid-26743670-id-3479887.html
 int main()
 {
 	mysql_library_init(0, NULL, NULL);
 	sLog->Init(0, 5, ".");
-	sUvTaskPool->Start();
-	CDataBase* pDataBase = new CDataBase();
+	sUvTaskPool->Init();
+	CSqlBase* pDataBase = new CSqlBase();
 	tagConnInfo stConn;
 	stConn.strHost = "192.168.11.128";
 	stConn.strUsr = "root";
@@ -22,7 +22,7 @@ int main()
 	stConn.usPort = 3306;
 	pDataBase->SetSqlParam(stConn);
 	sUvTaskPool->PushTask((CTask*)pDataBase);
-	sleep_ms(1000);
+	sleep_ms(2000);
 	CSqlQuery* pQuery = new CSqlQuery();
 	char *pSql = "select * from score;";
 	pQuery->AddQuery((unsigned char*)pSql, strlen(pSql));
