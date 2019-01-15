@@ -10,11 +10,14 @@ public:
 
 public:
 	int HandleQueryReult(MYSQL_RES *pResult);
+    CSqlRow* FetchRow();
+    CSqlRow* GetRow(int iIndex);
 
 private:
 	MYSQL_RES *mpResult;
 	MYSQL_FIELD *mpFields;
 	unsigned int miNumFields;
+    std::vector<CSqlRow*> mvecSqlRows;
 };
 
 #endif

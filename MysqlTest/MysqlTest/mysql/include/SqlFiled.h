@@ -6,7 +6,7 @@
 class CSqlFiled
 {
 public:
-	CSqlFiled(char* pData, enum_field_types iType);
+	CSqlFiled(char* pData, unsigned long lDataLen, enum_field_types iType);
 	~CSqlFiled();
 
 public:
@@ -16,6 +16,7 @@ public:
 
 private:
 	char* mpData;
+    unsigned long mlDataLen;
 	enum_field_types miType;
 };
 

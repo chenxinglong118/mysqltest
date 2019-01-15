@@ -116,7 +116,7 @@ void CSqlBase::ExcuteQuery(CSqlQuery* pQuery) {
 				continue;
 			}
 			else {//发生一个未知的错误
-				LOG_ERR("unknow error");
+				LOG_ERR("unknow error:%d %d %s", iRet, mysql_errno(mpMysql), mysql_error(mpMysql));
 			}
 		}
 
@@ -127,6 +127,7 @@ void CSqlBase::ExcuteQuery(CSqlQuery* pQuery) {
 			if (mysql_field_count(mpMysql) == 0) // query does not return data   (it was not a SELECT)
 			{
 				my_ulonglong iNumRows = mysql_affected_rows(mpMysql);
+                LOG_INFO("query affect nums:%lld", iNumRows);
 			}
 			else // mysql_store_result() should have returned data
 			{
