@@ -46,7 +46,7 @@ int CSqlBase::TaskInit() {
 					mysql_options(mpMysql, MYSQL_OPT_CONNECT_TIMEOUT, &mstConnInfo.iTimeOut);
 				}
 
-				if (!mysql_real_connect(mpMysql, mstConnInfo.strHost.c_str(), mstConnInfo.strUsr.c_str(), mstConnInfo.strPasswd.c_str(), mstConnInfo.strDbName.c_str(), mstConnInfo.usPort, nullptr, CLIENT_MULTI_STATEMENTS)) {
+				if (!mysql_real_connect(mpMysql, mstConnInfo.strHost.c_str(), mstConnInfo.strUsr.c_str(), mstConnInfo.strPasswd.c_str(), mstConnInfo.strDbName.c_str(), mstConnInfo.usPort, NULL, CLIENT_MULTI_STATEMENTS)) {
 					LOG_ERR("mysql_real_connect error %d %s", mysql_errno(mpMysql), mysql_error(mpMysql));
 					break;
 				}
@@ -68,7 +68,7 @@ int CSqlBase::DoPing() {
 }
 
 int CSqlBase::PushQuery(CSqlQuery* pQuery) {
-	ASSERT_RET_VALUE(mbInit && nullptr != pQuery, 1);
+	ASSERT_RET_VALUE(mbInit && NULL != pQuery, 1);
 	mcQueQueryMutex.Lock();
 	mqueQuery.push(pQuery);
 	mcQueQueryMutex.UnLock();
@@ -77,7 +77,7 @@ int CSqlBase::PushQuery(CSqlQuery* pQuery) {
 }
 
 CSqlQuery* CSqlBase::PopQuery() {
-	CSqlQuery* pQuery = nullptr;
+	CSqlQuery* pQuery = NULL;
 	mcQueQueryMutex.Lock();
 	if (!mqueQuery.empty()) {
 		pQuery = mqueQuery.front();
@@ -99,44 +99,62 @@ void CSqlBase::CleanQuery() {
 }
 
 void CSqlBase::ExcuteQuery(CSqlQuery* pQuery) {
-	ASSERT_RET(nullptr != pQuery);
+	ASSERT_RET(NULL != pQuery);
+    std::vector<CSqlResult*> vecResult;
 	len_str sqlstr = pQuery->PopQueryStr();
-	while (sqlstr.iLen > 0 && nullptr != sqlstr.pStr) {
-		int iRet = mysql_real_query(mpMysql, (char*)sqlstr.pStr, (unsigned long)sqlstr.iLen);
-		if (iRet) {
-			if (iRet == CR_COMMANDS_OUT_OF_SYNC) {//命令以一个不适当的次序被执行
-				LOG_ERR("Commands is out of sync");
-			}
-			else if (iRet == CR_SERVER_GONE_ERROR) {//MySQL服务器关闭了
-				LOG_ERR("mysql server gone");
-			}
-			else if (iRet == CR_SERVER_LOST) {//对服务器的连接在查询期间失去
-				LOG_ERR("mysql server lost");
-				DoPing();
-				continue;
-			}
-			else {//发生一个未知的错误
-				LOG_ERR("unknow error:%d %d %s", iRet, mysql_errno(mpMysql), mysql_error(mpMysql));
-			}
-		}
+    while (sqlstr.iLen > 0 && NULL != sqlstr.pStr) {
+        int iRet = mysql_real_query(mpMysql, (char*)sqlstr.pStr, (unsigned long)sqlstr.iLen);
+        if (iRet) {
+            if (iRet == CR_COMMANDS_OUT_OF_SYNC) {//命令以一个不适当的次序被执行
+                LOG_ERR("Commands is out of sync");
+            }
+            else if (iRet == CR_SERVER_GONE_ERROR) {//MySQL服务器关闭了
+                LOG_ERR("mysql server gone");
+            }
+            else if (iRet == CR_SERVER_LOST) {//对服务器的连接在查询期间失去
+                LOG_ERR("mysql server lost");
+                DoPing();
+                continue;
+            }
+            else {//发生一个未知的错误
+                LOG_ERR("unknow error:%d %d %s", iRet, mysql_errno(mpMysql), mysql_error(mpMysql));
+            }
+        }
 
-		MYSQL_RES *pResult = mysql_store_result(mpMysql);
-		if (pResult) {
-			pQuery->HandleQueryReult(pResult);
-		} else {// mysql_store_result() returned nothing; should it have?
-			if (mysql_field_count(mpMysql) == 0) // query does not return data   (it was not a SELECT)
-			{
-				my_ulonglong iNumRows = mysql_affected_rows(mpMysql);
-                LOG_INFO("query affect nums:%lld", iNumRows);
-			}
-			else // mysql_store_result() should have returned data
-			{
-				LOG_ERR("Error: %s %s", mysql_error(mpMysql), (char*)sqlstr.pStr);
-			}
-		}
-		
-		sqlstr = pQuery->PopQueryStr();
-	}
+        if (pQuery->GetCb()) {
+            CSqlResult* pSqlResult = new CSqlResult();
+            if (pSqlResult) {
+                MYSQL_RES *pResult = mysql_store_result(mpMysql);
+                if (pResult) {
+                    pSqlResult->SetResult(pResult);
+                }
+                else {// mysql_store_result() returned nothing; should it have?
+                    if (mysql_field_count(mpMysql) == 0) // query does not return data   (it was not a SELECT)
+                    {
+                        pSqlResult->SetAffectRows(mysql_affected_rows(mpMysql));
+                    }
+                    else // mysql_store_result() should have returned data
+                    {
+                        pSqlResult->SetError(mysql_error(mpMysql));
+                    }
+                }
+
+                vecResult.push_back(pSqlResult);
+            }
+        }
+
+        sqlstr = pQuery->PopQueryStr();
+    }
+
+    if (pQuery->GetCb()) {
+        pQuery->GetCb()(pQuery->GetQueryId(), vecResult, pQuery->GetCbParam());
+    }
+
+    while (!vecResult.empty()) {
+        std::vector<CSqlResult*>::iterator iter = vecResult.begin();
+        CSqlResult* pSqlResult = *iter;
+        DODELETE(pSqlResult);
+    }
 
 	DODELETE(pQuery);
 }
@@ -145,7 +163,7 @@ int CSqlBase::TaskExcute() {
 	LOG_INFO("Enter CSqlBase::TaskExcute");
 	while(!mbQuit && mbInit) {
 		CSqlQuery* pQuery  = PopQuery();
-		if (nullptr == pQuery) {
+		if (NULL == pQuery) {
 			mcSem.Wait();
 			continue;
 		}

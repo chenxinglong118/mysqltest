@@ -5,6 +5,7 @@ CSqlRow::CSqlRow(MYSQL_FIELD *pFields, unsigned int iNumFields, MYSQL_ROW pSqlRo
 	miNumFields = iNumFields;
 	mpSqlRow = pSqlRow;
     mplRowLen = pRowLen;
+    GetFileds();
 }
 
 CSqlRow::~CSqlRow(){
@@ -12,7 +13,7 @@ CSqlRow::~CSqlRow(){
 }
 
 void CSqlRow::GetFileds() {
-    if (mpSqlRow && mplRowLen && mpFields && miNumFields > 0) {
+    if (mvecFileds.empty() && mpSqlRow && mplRowLen && mpFields && miNumFields > 0) {
         for (unsigned int i = 0; i < miNumFields; ++i) {
             CSqlFiled* pSqlFiled = new CSqlFiled(mpSqlRow[i], mplRowLen[i], mpFields[i].type);
             if (pSqlFiled) {
@@ -20,6 +21,10 @@ void CSqlRow::GetFileds() {
             }
         }
     }
+}
+
+CSqlFiled* CSqlRow::operator[](unsigned int iIndex) {
+    return GetFiled(iIndex);
 }
 
 CSqlFiled* CSqlRow::GetFiled(unsigned int iIndex) {

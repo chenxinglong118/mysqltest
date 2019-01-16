@@ -23,3 +23,14 @@ long CSqlFiled::GetLong() {
 	ASSERT_RET_VALUE(mpData && mlDataLen >0 && MYSQL_TYPE_LONG == miType, (long)0);
 	return *reinterpret_cast<long*>(mpData);
 }
+
+len_str CSqlFiled::GetData() {
+    len_str lRet;
+    memset(&lRet, 0, sizeof(lRet));
+
+    ASSERT_RET_VALUE(mpData && mlDataLen >0, lRet);
+    lRet.pStr = mpData;
+    lRet.iLen = mlDataLen;
+
+    return lRet;
+}

@@ -11,6 +11,7 @@ public:
 public:
     void GetFileds();
     CSqlFiled* GetFiled(unsigned int iIndex);
+    CSqlFiled* operator[](unsigned int iIndex);
 
 private:
     void Clean();

@@ -13,6 +13,7 @@ public:
 	short GetShort();
 	float GetFloat();
 	long GetLong();
+    len_str GetData();
 
 private:
 	char* mpData;

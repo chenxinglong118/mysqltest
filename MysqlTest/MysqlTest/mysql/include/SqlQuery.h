@@ -1,29 +1,32 @@
 #ifndef __CSQLQUERY__H_
 #define __CSQLQUERY__H_
 #include "CLogmanager.h"
+#include "GuidTool.h"
 #include "SqlResult.h"
 #include <queue>
 
-typedef int(*sql_callback)(CSqlResult* pResult, void* pParam);
+typedef int(*sql_callback)(std::string& strQueryID, std::vector<CSqlResult*>& pResult, void* pParam);
 class CSqlQuery{
 public:
 	CSqlQuery();
 	~CSqlQuery();
 
 public:
-	int AddQuery(unsigned char* pQueryStr, size_t iLen);
+	int AddQuery(char* pQueryStr, size_t iLen);
 	len_str PopQueryStr();
-	void SetCb(sql_callback pCb, void* pCbParam);
-	int HandleQueryReult(MYSQL_RES *pResult);
+	std::string SetCb(sql_callback pCb, void* pCbParam);
+    std::string GetQueryId() { return mstrGuid; }
+    void* GetCbParam() { return mpCbParam; }
+    sql_callback GetCb() { return mpCb; }
 
 private:
-	void CleanQueryStr();
+	void Clean();
 
 private:
 	std::queue<len_str> mqueQueryStr;
 	sql_callback mpCb;
 	void* mpCbParam;
-	CSqlResult* mpSqlReult;
+    std::string mstrGuid;
 };
 
 #endif

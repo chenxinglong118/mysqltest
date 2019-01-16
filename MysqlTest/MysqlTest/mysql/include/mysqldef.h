@@ -7,6 +7,7 @@
 //mysql_library_init
 //mysql_library_end
 
+#pragma pack(1)
 struct  tagConnInfo{
 	tagConnInfo& operator= (const tagConnInfo& stConnInfo) {
 		if (this != &stConnInfo) {
@@ -32,4 +33,5 @@ struct  tagConnInfo{
 	std::string strDbName;
 	std::string strCharSetName;
 };
+#pragma pack()
 #endif
