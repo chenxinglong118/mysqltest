@@ -5,6 +5,7 @@ CSqlResult::CSqlResult(){
 	mpFields = NULL;
 	miNumFields = 0;
     mlRows = 0;
+    mlAffectRows = 0;
     miErrNo = 0;
 }
 
@@ -12,7 +13,7 @@ CSqlResult::~CSqlResult(){
     Clean();
 }
 
-void CSqlResult::SetError(int iErrNo, std::string strError) {
+void CSqlResult::SetError(unsigned int iErrNo, std::string strError) {
     mstrError = strError;
     miErrNo = iErrNo;
 }
@@ -71,6 +72,7 @@ int CSqlResult::SetResult(MYSQL_RES *pResult) {
 	mpResult = pResult;
 	miNumFields = mysql_num_fields(mpResult);
 	mpFields = mysql_fetch_fields(mpResult); 
-	
+    mlRows = mysql_num_rows(mpResult);
+
 	return 0;
 }

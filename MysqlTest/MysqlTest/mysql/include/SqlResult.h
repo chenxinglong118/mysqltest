@@ -10,14 +10,17 @@ public:
 
 public:
 	int SetResult(MYSQL_RES *pResult);
+    unsigned int GetFieldsNum() { return miNumFields; }
+    my_ulonglong GetRowsNum() { return mlRows; }
     CSqlRow* FetchRow();
     CSqlRow* GetRow(int iIndex);
 
-    void SetAffectRows(my_ulonglong lRows) { mlRows = lRows; }
-    my_ulonglong GetAffectRows() { return mlRows; }
+    void SetAffectRows(my_ulonglong lRows) { mlAffectRows = lRows; }
+    my_ulonglong GetAffectRows() { return mlAffectRows; }
 
-    void SetError(int iErrNo, std::string strError);
+    void SetError(unsigned int iErrNo, std::string strError);
     std::string& GetError() { return mstrError; }
+    int GetErrNo() { return miErrNo; }
 
     int FindColIndex(char* pName);
 private:
@@ -28,9 +31,10 @@ private:
 	MYSQL_FIELD *mpFields;
 	unsigned int miNumFields;
     std::vector<CSqlRow*> mvecSqlRows;
+    my_ulonglong mlAffectRows;
     my_ulonglong mlRows;
     std::string mstrError;
-    int miErrNo;
+    unsigned int miErrNo;
 };
 
 #endif

@@ -70,6 +70,30 @@ int CSqlFiled::GetInt() {//MYSQL_TYPE_INT24 == miType
     return static_cast<int>(a);
 }
 
+int8_t CSqlFiled::GetInt8() {
+    return static_cast<int8_t>(GetLong());
+}
+
+uint8_t CSqlFiled::GetUint8() {
+    return static_cast<uint8_t>(GetLong());
+}
+
+int16_t CSqlFiled::GetInt16() {
+    return static_cast<int16_t>(GetLong());
+}
+
+uint16_t CSqlFiled::GetUint16() {
+    return static_cast<uint16_t>(GetLong());
+}
+
+int32_t CSqlFiled::GetInt32() {
+    return static_cast<int32_t>(GetLong());
+}
+
+uint32_t CSqlFiled::GetUint32() {
+    return static_cast<uint32_t>(GetLong());
+}
+
 std::string CSqlFiled::GetStr() {//MYSQL_TYPE_VAR_STRING == miType
     ASSERT_RET_VALUE(mpData && mlDataLen > 0, "");
     return std::string(mpData, mlDataLen);

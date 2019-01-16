@@ -18,6 +18,12 @@ public:
     int64_t GetInt64();
     uint64_t GetUint64();
     int GetInt();
+    int8_t GetInt8();
+    uint8_t GetUint8();
+    int16_t GetInt16();
+    uint16_t GetUint16();
+    int32_t GetInt32();
+    uint32_t GetUint32();
     std::string GetStr();
     len_str GetData();
 
