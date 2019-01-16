@@ -5,10 +5,16 @@ CSqlResult::CSqlResult(){
 	mpFields = NULL;
 	miNumFields = 0;
     mlRows = 0;
+    miErrNo = 0;
 }
 
 CSqlResult::~CSqlResult(){
     Clean();
+}
+
+void CSqlResult::SetError(int iErrNo, std::string strError) {
+    mstrError = strError;
+    miErrNo = iErrNo;
 }
 
 void  CSqlResult::Clean() {

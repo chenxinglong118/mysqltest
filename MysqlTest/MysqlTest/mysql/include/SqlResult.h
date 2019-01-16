@@ -16,7 +16,7 @@ public:
     void SetAffectRows(my_ulonglong lRows) { mlRows = lRows; }
     my_ulonglong GetAffectRows() { return mlRows; }
 
-    void SetError(std::string strError) { mstrError = strError; }
+    void SetError(int iErrNo, std::string strError);
     std::string& GetError() { return mstrError; }
 
     int FindColIndex(char* pName);
@@ -30,6 +30,7 @@ private:
     std::vector<CSqlRow*> mvecSqlRows;
     my_ulonglong mlRows;
     std::string mstrError;
+    int miErrNo;
 };
 
 #endif

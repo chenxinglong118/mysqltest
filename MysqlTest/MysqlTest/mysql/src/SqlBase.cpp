@@ -135,7 +135,7 @@ void CSqlBase::ExcuteQuery(CSqlQuery* pQuery) {
                     }
                     else // mysql_store_result() should have returned data
                     {
-                        pSqlResult->SetError(mysql_error(mpMysql));
+                        pSqlResult->SetError(mysql_errno(mpMysql), mysql_error(mpMysql));
                     }
                 }
 
