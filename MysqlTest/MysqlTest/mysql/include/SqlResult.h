@@ -19,6 +19,7 @@ public:
     void SetError(std::string strError) { mstrError = strError; }
     std::string& GetError() { return mstrError; }
 
+    int FindColIndex(char* pName);
 private:
     void Clean();
 

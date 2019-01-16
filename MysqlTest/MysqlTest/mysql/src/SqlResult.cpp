@@ -16,6 +16,7 @@ void  CSqlResult::Clean() {
         std::vector<CSqlRow*>::iterator iter = mvecSqlRows.begin();
         CSqlRow* pSqlRow = *iter;
         DODELETE(pSqlRow);
+        mvecSqlRows.erase(iter);
     }
 
     if (mpResult) {
@@ -44,6 +45,19 @@ CSqlRow* CSqlResult::FetchRow() {
 CSqlRow* CSqlResult::GetRow(int iIndex) {
     ASSERT_RET_VALUE(iIndex < mvecSqlRows.size(), NULL);
     return mvecSqlRows[iIndex];
+}
+
+int CSqlResult::FindColIndex(char* pName) {
+    int iRet = -1;
+    ASSERT_RET_VALUE(mpFields && pName && strlen(pName) > 0 && miNumFields > 0, 1);
+    for (int i = 0; i < (int)miNumFields; ++i) {
+        if (str_cmp(mpFields[i].name, pName, true)) {
+            iRet = i;
+            break;
+        }
+    }
+
+    return iRet;
 }
 
 int CSqlResult::SetResult(MYSQL_RES *pResult) {

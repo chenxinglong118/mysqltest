@@ -5,7 +5,7 @@
 #include "SqlResult.h"
 #include <queue>
 
-typedef int(*sql_callback)(std::string& strQueryID, std::vector<CSqlResult*>& pResult, void* pParam);
+typedef int(*sql_callback)(std::string& strQueryID, std::vector<CSqlResult*>& vecResult, void* pParam);
 class CSqlQuery{
 public:
 	CSqlQuery();

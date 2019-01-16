@@ -10,9 +10,15 @@ public:
 	~CSqlFiled();
 
 public:
-	short GetShort();
+	unsigned long GetULong();
 	float GetFloat();
+    double GetDouble();
+    char GetChar();
 	long GetLong();
+    int64_t GetInt64();
+    uint64_t GetUint64();
+    int GetInt();
+    std::string GetStr();
     len_str GetData();
 
 private:

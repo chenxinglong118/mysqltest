@@ -41,9 +41,8 @@ int CSqlQuery::AddQuery(char* pQueryStr, size_t iLen) {
 	ASSERT_RET_VALUE(NULL != pQueryStr && iLen > 0, 1);
 	len_str tmpStr;
 	tmpStr.iLen = iLen;
-	tmpStr.pStr = (char*)malloc(iLen * sizeof(char) + 1);
+	tmpStr.pStr = (char*)malloc(iLen * sizeof(char)); 
 	memcpy(tmpStr.pStr, pQueryStr, iLen);
-	tmpStr.pStr[iLen] = '\0';
 	mqueQueryStr.push(tmpStr);
 	return 0;
 }

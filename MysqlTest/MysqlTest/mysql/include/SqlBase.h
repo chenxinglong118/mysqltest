@@ -14,6 +14,7 @@ public:
 	void SetSqlParam(const tagConnInfo& stConnInfo);
 	void Quit();
 	int PushQuery(CSqlQuery* pQuery);
+    len_str EscapeStr(char* pSrc, unsigned long lSrcLen, unsigned long& lDstLen);
 
 protected:
 	int TaskInit();

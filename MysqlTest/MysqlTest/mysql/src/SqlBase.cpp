@@ -103,7 +103,7 @@ void CSqlBase::ExcuteQuery(CSqlQuery* pQuery) {
     std::vector<CSqlResult*> vecResult;
 	len_str sqlstr = pQuery->PopQueryStr();
     while (sqlstr.iLen > 0 && NULL != sqlstr.pStr) {
-        int iRet = mysql_real_query(mpMysql, (char*)sqlstr.pStr, (unsigned long)sqlstr.iLen);
+        int iRet = mysql_real_query(mpMysql, sqlstr.pStr, (unsigned long)sqlstr.iLen);
         if (iRet) {
             if (iRet == CR_COMMANDS_OUT_OF_SYNC) {//命令以一个不适当的次序被执行
                 LOG_ERR("Commands is out of sync");
@@ -154,6 +154,7 @@ void CSqlBase::ExcuteQuery(CSqlQuery* pQuery) {
         std::vector<CSqlResult*>::iterator iter = vecResult.begin();
         CSqlResult* pSqlResult = *iter;
         DODELETE(pSqlResult);
+        vecResult.erase(iter);
     }
 
 	DODELETE(pQuery);
@@ -184,4 +185,14 @@ int CSqlBase::TaskQuit() {
 	mysql_thread_end();
 
 	return 0;
+}
+
+len_str CSqlBase::EscapeStr(char* pSrc, unsigned long lSrcLen, unsigned long& lDstLen) {
+    len_str lRet;
+    memset(&lRet, 0, sizeof(lRet));
+    ASSERT_RET_VALUE(mpMysql && pSrc && lSrcLen > 0, lRet);
+    lRet.iLen = 2 * lSrcLen + 1;
+    lRet.pStr = (char*)do_malloc(lRet.iLen*sizeof(char));
+    lDstLen = mysql_real_escape_string(mpMysql, lRet.pStr, pSrc, lSrcLen);
+    return lRet;
 }

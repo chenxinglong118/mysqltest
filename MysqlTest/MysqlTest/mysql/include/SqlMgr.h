@@ -14,5 +14,5 @@ public:
 private:
     bool mbInit;
 };
-
+#define sSqlMgr CSqlMgr::Instance()
 #endif

@@ -37,5 +37,6 @@ void CSqlRow::Clean() {
         std::vector<CSqlFiled*>::iterator iter = mvecFileds.begin();
         CSqlFiled* pSqlFiled = *iter;
         DODELETE(pSqlFiled);
+        mvecFileds.erase(iter);
     }
 }
