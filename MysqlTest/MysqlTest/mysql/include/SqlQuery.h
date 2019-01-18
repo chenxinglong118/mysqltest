@@ -18,11 +18,14 @@ public:
     std::string GetQueryId() { return mstrGuid; }
     void* GetCbParam() { return mpCbParam; }
     sql_callback GetCb() { return mpCb; }
+    void SetAffairFlag(bool bFlag) { mbAffairFlag = bFlag; }
+    bool GetAffairFlag() { return mbAffairFlag; }
 
 private:
 	void Clean();
 
 private:
+    bool mbAffairFlag;
 	std::queue<len_str> mqueQueryStr;
 	sql_callback mpCb;
 	void* mpCbParam;

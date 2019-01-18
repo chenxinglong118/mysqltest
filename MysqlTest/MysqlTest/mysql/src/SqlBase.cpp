@@ -101,57 +101,85 @@ void CSqlBase::CleanQuery() {
 void CSqlBase::ExcuteQuery(CSqlQuery* pQuery) {
 	ASSERT_RET(NULL != pQuery);
     std::vector<CSqlResult*> vecResult;
-	len_str sqlstr = pQuery->PopQueryStr();
-    while (sqlstr.iLen > 0 && NULL != sqlstr.pStr) {
-        int iRet = mysql_real_query(mpMysql, sqlstr.pStr, (unsigned long)sqlstr.iLen);
-        std::string strErr;
-        unsigned int iErrNo = 0;
-        if (iRet) {
-            if (iRet == CR_COMMANDS_OUT_OF_SYNC) {//命令以一个不适当的次序被执行
-                LOG_ERR("Commands is out of sync");
+    if (!pQuery->GetAffairFlag()) {//非事物处理
+        len_str sqlstr = pQuery->PopQueryStr();
+        while (sqlstr.iLen > 0 && NULL != sqlstr.pStr) {
+            int iRet = mysql_real_query(mpMysql, sqlstr.pStr, (unsigned long)sqlstr.iLen);
+            std::string strErr;
+            unsigned int iErrNo = 0;
+            if (iRet) {
+                if (iRet == CR_COMMANDS_OUT_OF_SYNC) {//命令以一个不适当的次序被执行
+                    LOG_ERR("Commands is out of sync");
+                }
+                else if (iRet == CR_SERVER_GONE_ERROR) {//MySQL服务器关闭了
+                    LOG_ERR("mysql server gone");
+                }
+                else if (iRet == CR_SERVER_LOST) {//对服务器的连接在查询期间失去
+                    LOG_ERR("mysql server lost");
+                    DoPing();
+                    continue;
+                }
+                else {//发生一个未知的错误
+                    LOG_ERR("unknow error:%d %d %s", iRet, mysql_errno(mpMysql), mysql_error(mpMysql));
+                    strErr = mysql_error(mpMysql);
+                    iErrNo = mysql_errno(mpMysql);
+                }
             }
-            else if (iRet == CR_SERVER_GONE_ERROR) {//MySQL服务器关闭了
-                LOG_ERR("mysql server gone");
-            }
-            else if (iRet == CR_SERVER_LOST) {//对服务器的连接在查询期间失去
-                LOG_ERR("mysql server lost");
-                DoPing();
-                continue;
-            }
-            else {//发生一个未知的错误
-                LOG_ERR("unknow error:%d %d %s", iRet, mysql_errno(mpMysql), mysql_error(mpMysql));
-                strErr = mysql_error(mpMysql);
-                iErrNo = mysql_errno(mpMysql);
-            }
-        }
 
-        if (pQuery->GetCb()) {
-            CSqlResult* pSqlResult = new CSqlResult();
-            if (pSqlResult) {
-                if (strErr.empty()) {
-                    MYSQL_RES *pResult = mysql_store_result(mpMysql);
-                    if (pResult) {
-                        pSqlResult->SetResult(pResult);
-                    }
-                    else {// mysql_store_result() returned nothing; should it have?
-                        if (mysql_field_count(mpMysql) == 0) // query does not return data   (it was not a SELECT)
-                        {
-                            pSqlResult->SetAffectRows(mysql_affected_rows(mpMysql));
+            if (pQuery->GetCb()) {
+                CSqlResult* pSqlResult = new CSqlResult();
+                if (pSqlResult) {
+                    if (strErr.empty()) {
+                        MYSQL_RES *pResult = mysql_store_result(mpMysql);
+                        if (pResult) {
+                            pSqlResult->SetResult(pResult);
                         }
-                        else // mysql_store_result() should have returned data
-                        {
-                            pSqlResult->SetError(mysql_errno(mpMysql), mysql_error(mpMysql));
+                        else {// mysql_store_result() returned nothing; should it have?
+                            if (mysql_field_count(mpMysql) == 0) // query does not return data   (it was not a SELECT)
+                            {
+                                pSqlResult->SetAffectRows(mysql_affected_rows(mpMysql));
+                            }
+                            else // mysql_store_result() should have returned data
+                            {
+                                pSqlResult->SetError(mysql_errno(mpMysql), mysql_error(mpMysql));
+                            }
                         }
                     }
-                } else {
-                    pSqlResult->SetError(iErrNo, strErr);
+                    else {
+                        pSqlResult->SetError(iErrNo, strErr);
+                    }
+
+                    vecResult.push_back(pSqlResult);
+                }
+            }
+
+            sqlstr = pQuery->PopQueryStr();
+        }
+    } else {
+        if (!mysql_query(mpMysql, "BEGIN")) {
+            len_str sqlstr = pQuery->PopQueryStr();
+            bool bSuccess = true;
+            while (sqlstr.iLen > 0 && NULL != sqlstr.pStr) {
+                if (mysql_real_query(mpMysql, sqlstr.pStr, (unsigned long)sqlstr.iLen)) {
+                    bSuccess = false;
+                    break;
                 }
 
-                vecResult.push_back(pSqlResult);
+                sqlstr = pQuery->PopQueryStr();
+            }
+
+            if (bSuccess) {
+                if (mysql_query(mpMysql, "COMMIT")) {
+                    bSuccess = false;
+                }
+            }
+
+            if (!bSuccess) {
+                if (mysql_query(mpMysql, "ROLLBACK")) {
+                    LOG_ERR("RollBackError:%d %s", mysql_errno(mpMysql), mysql_error(mpMysql));
+                }
             }
         }
-
-        sqlstr = pQuery->PopQueryStr();
     }
 
     if (pQuery->GetCb()) {

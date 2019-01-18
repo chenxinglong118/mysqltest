@@ -3,6 +3,7 @@
 CSqlQuery::CSqlQuery() {
 	mpCb = NULL;
 	mpCbParam = NULL;
+    mbAffairFlag = false;
 }
 
 CSqlQuery::~CSqlQuery() {
